@@ -1,0 +1,145 @@
+================================================================================
+           CALORIE COUNTER APPLICATION - FILE EXPLANATION GUIDE
+================================================================================
+
+This document explains what each file in this project does and how they all
+work together to log food consumption and calculate daily calories.
+
+--------------------------------------------------------------------------------
+1. CONFIGURATION & BUILD FILES
+--------------------------------------------------------------------------------
+
+* pom.xml
+  - Location: /demo/pom.xml
+  - What it does:
+    Maven project descriptor that manages libraries, dependencies, and Java version.
+    Configured for Java 24 (`<java.version>24</java.version>`) and includes:
+    1) Spring Boot Starter Web: Enables REST APIs and web server (embedded Tomcat).
+    2) Spring Boot Starter Data JPA: Simplifies database access with Hibernate.
+    3) MySQL Connector/J (mysql-connector-j): JDBC driver to connect to MySQL.
+
+* application.properties
+  - Location: /demo/src/main/resources/application.properties
+  - What it does:
+    Contains the environment settings for Spring Boot and MySQL:
+    - MySQL connection URL: jdbc:mysql://localhost:3306/calorie_tracker
+    - Username: root
+    - Password: [configured password]
+    - Hibernate ddl-auto=update: Automatically creates or updates the database
+      table structure in MySQL when the app starts.
+    - Server port: 8080 (http://localhost:8080)
+
+--------------------------------------------------------------------------------
+2. BACKEND JAVA CODE (src/main/java/com/example/demo/)
+--------------------------------------------------------------------------------
+
+* DemoApplication.java
+  - Location: .../demo/DemoApplication.java
+  - What it does:
+    The main entry point of the Spring Boot application containing `main()`.
+    When run, it initializes the Spring context, starts the embedded web server,
+    and connects to the database.
+
+* model/FoodLog.java (Entity)
+  - Location: .../demo/model/FoodLog.java
+  - What it does:
+    Represents the database table `food_logs`.
+    Each record represents one logged food item with fields:
+    - id: Unique primary key (auto-incremented)
+    - foodName: Name of the food (e.g. "Oatmeal", "Apple")
+    - calories: Calorie amount in kcal (e.g. 320)
+    - mealType: Category (BREAKFAST, LUNCH, DINNER, SNACK)
+    - servingSize: Optional portion info (e.g. "1 bowl", "150g")
+    - logDate: The date the food was consumed (LocalDate)
+    - createdAt: Timestamp of when the entry was created
+
+* repository/FoodLogRepository.java (Data Access Layer)
+  - Location: .../demo/repository/FoodLogRepository.java
+  - What it does:
+    Spring Data JPA interface that provides ready-to-use database queries:
+    - save(), findById(), deleteById() (inherited from JpaRepository)
+    - findByLogDateOrderByCreatedAtDesc(date): Fetches all food eaten on a specific date
+    - findByLogDateBetweenOrderByLogDateAsc(start, end): Fetches records for 7-day trend
+
+* dto/DailySummaryDTO.java (Data Transfer Object)
+  - Location: .../demo/dto/DailySummaryDTO.java
+  - What it does:
+    A structured object sent to the frontend containing calculated summary data:
+    - date: Current selected date
+    - totalCalories: Sum of all calories eaten today
+    - breakfastCalories: Subtotal calories for breakfast
+    - lunchCalories: Subtotal calories for lunch
+    - dinnerCalories: Subtotal calories for dinner
+    - snackCalories: Subtotal calories for snacks
+    - targetCalories: Daily target calorie goal (e.g., 2000 kcal)
+    - remainingCalories: Calories left before reaching goal (target - total)
+    - logs: List of individual food items logged for that day
+
+* service/FoodLogService.java (Business Logic Layer)
+  - Location: .../demo/service/FoodLogService.java
+  - What it does:
+    Performs the core calculations and data operations:
+    1) getDailySummary(date, targetCalories):
+       Fetches the day's food items and iterates over them to compute:
+       - Total daily calories
+       - Category breakdowns (Breakfast, Lunch, Dinner, Snack)
+       - Remaining calories against target goal
+    2) logFood(foodLog):
+       Validates and saves a new meal log into MySQL.
+    3) updateFoodLog(id, updated):
+       Edits an existing food log entry.
+    4) deleteFoodLog(id):
+       Deletes an entry by its ID.
+    5) getPastDaysTrend(days, target):
+       Calculates daily calorie totals over the past 7 days for the trend chart.
+
+* controller/FoodLogController.java (REST API Layer)
+  - Location: .../demo/controller/FoodLogController.java
+  - What it does:
+    Exposes HTTP endpoints that the web frontend calls using JavaScript fetch:
+    - GET /api/meals?date=YYYY-MM-DD&target=2000
+      -> Returns the calculated daily summary and meal list for that date.
+    - POST /api/meals
+      -> Receives JSON of a new food item and saves it to MySQL.
+    - PUT /api/meals/{id}
+      -> Updates an existing food entry.
+    - DELETE /api/meals/{id}
+      -> Removes a food entry from the database.
+    - GET /api/meals/trend?days=7&target=2000
+      -> Returns 7-day history for the trend chart.
+
+--------------------------------------------------------------------------------
+3. FRONTEND USER INTERFACE
+--------------------------------------------------------------------------------
+
+* index.html
+  - Location: /demo/src/main/resources/static/index.html
+  - What it does:
+    A single-page web user interface automatically served at http://localhost:8080:
+    1) Header & Date Navigator:
+       Navigate to previous day, next day, today, or pick any calendar date.
+    2) Daily Calorie Calculator:
+       Displays total calories consumed, editable calorie target, dynamic progress
+       bar, and remaining/over-budget badge in real-time.
+    3) Meal Breakdown Cards:
+       Displays live subtotal calories for Breakfast, Lunch, Dinner, and Snacks.
+    4) Quick Log Buttons & Modal Form:
+       Allows one-click quick addition of common items or custom food input
+       (name, calories, meal type, portion).
+    5) Grouped Meal List:
+       Lists all foods logged under each meal category with delete buttons.
+    6) 7-Day Trend Chart:
+       Visual bar chart tracking calorie consumption consistency over the last 7 days.
+
+--------------------------------------------------------------------------------
+HOW THE FLOW WORKS TOGETHER:
+--------------------------------------------------------------------------------
+1. User logs a food item in index.html (or clicks Quick Log).
+2. JavaScript sends a POST request with JSON to FoodLogController.
+3. FoodLogController calls FoodLogService.logFood().
+4. FoodLogService persists the record into MySQL via FoodLogRepository.
+5. index.html calls GET /api/meals?date=...
+6. FoodLogService calculates total calories, meal subtotals, and remaining calories.
+7. index.html receives DailySummaryDTO and instantly updates the progress bar,
+   calorie numbers, and food lists on the screen.
+================================================================================
