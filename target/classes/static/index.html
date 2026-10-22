@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calorie Counter — Daily Food & Nutrition Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #ecfdf5;
+      --accent: #3b82f6;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg);
+      padding: 0.35rem 0.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+
+    .btn-icon:hover {
+      background: #e2e8f0;
+    }
+
+    .date-input {
+      border: none;
+      background: transparent;
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      cursor: pointer;
+      outline: none;
+      padding: 0.2rem 0.4rem;
+    }
+
+    .btn-today {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.15s;
+    }
+
+    .btn-today:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Calorie Dashboard Card */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 820px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .calorie-main {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+
+    .total-number {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text-main);
+    }
+
+    .total-unit {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .progress-bar-container {
+      margin: 1.25rem 0 0.75rem 0;
+      background: #f1f5f9;
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+    }
+
+    .progress-bar.over-limit {
+      background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+    }
+
+    .progress-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .target-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .target-box:hover {
+      text-decoration: underline;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-top: 0.75rem;
+      width: fit-content;
+    }
+
+    .badge-success {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    /* Breakdown Card */
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .meal-chip {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .meal-chip:hover {
+      transform: translateY(-2px);
+      border-color: #cbd5e1;
+    }
+
+    .meal-chip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .meal-chip-val {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Quick Action Bar */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.4rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    }
+
+    .quick-preset-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .preset-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .btn-preset {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.15s;
+    }
+
+    .btn-preset:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    /* Meal Sections */
+    .meals-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .meal-section {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .meal-header {
+      padding: 1rem 1.25rem;
+      background: #fafafa;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .meal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .meal-badge-count {
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+    }
+
+    .meal-header-cal {
+      font-weight: 700;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+
+    .food-list {
+      list-style: none;
+    }
+
+    .food-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.95rem 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s;
+    }
+
+    .food-item:last-child {
+      border-bottom: none;
+    }
+
+    .food-item:hover {
+      background: #fafbfc;
+    }
+
+    .food-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .food-name {
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.95rem;
+    }
+
+    .food-serving {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .food-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .food-calories {
+      font-weight: 700;
+      color: var(--primary-dark);
+      background: var(--primary-light);
+      padding: 0.25rem 0.65rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 0.4rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-delete:hover {
+      color: var(--danger);
+      background: #fee2e2;
+    }
+
+    .empty-state {
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* 7-Day Trend Section */
+    .trend-card {
+      margin-top: 2rem;
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .trend-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .trend-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      height: 140px;
+      padding-top: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .trend-bar-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      gap: 0.4rem;
+    }
+
+    .trend-bar {
+      width: 100%;
+      max-width: 38px;
+      background: #e2e8f0;
+      border-radius: 6px 6px 0 0;
+      transition: height 0.4s ease, background 0.2s;
+      position: relative;
+    }
+
+    .trend-bar.active {
+      background: var(--primary);
+    }
+
+    .trend-bar.over {
+      background: var(--danger);
+    }
+
+    .trend-val-tooltip {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .trend-day-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 1rem;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: modalIn 0.2s ease-out;
+    }
+
+    @keyframes modalIn {
+      from { transform: scale(0.96) translateY(8px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .btn-close {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.15rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .btn-secondary {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 100;
+    }
+
+    .toast {
+      background: #0f172a;
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      animation: toastIn 0.3s ease-out;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateY(16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">🥗</div>
+        <div>
+          <span>Calorie Counter</span>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Spring Boot & MySQL</div>
+        </div>
+      </div>
+
+      <!-- Date Navigator -->
+      <div class="date-nav">
+        <button class="btn-icon" id="prevDayBtn" title="Previous Day">‹</button>
+        <input type="date" id="datePicker" class="date-input">
+        <button class="btn-icon" id="nextDayBtn" title="Next Day">›</button>
+        <button class="btn-today" id="todayBtn">Today</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    
+    <!-- Dashboard: Daily Summary & Meal Breakdown -->
+    <div class="dashboard-grid">
+      <!-- Total Calorie Calculator Card -->
+      <div class="card summary-card">
+        <div>
+          <div class="card-title">Daily Calorie Calculator</div>
+          <div class="calorie-main">
+            <span class="total-number" id="totalCaloriesDisplay">0</span>
+            <span class="total-unit">kcal</span>
+          </div>
+
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="calorieProgressBar"></div>
+          </div>
+
+          <div class="progress-stats">
+            <span><span id="progressPercent">0</span>% of goal</span>
+            <div class="target-box" id="editGoalBtn" title="Click to adjust daily goal">
+              <span>Goal: <strong id="targetDisplay">2000</strong> kcal ✎</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="statusBadge" class="status-badge badge-success">
+          ✓ On Track
+        </div>
+      </div>
+
+      <!-- Breakdown by Meal Card -->
+      <div class="card">
+        <div class="card-title">Calories by Meal</div>
+        <div class="breakdown-grid">
+          <div class="meal-chip">
+            <div class="meal-chip-header">
+              <span>🌅 Breakfast</span>
+            </div>
+            <div class="meal-chip-val"><span id="breakfastVal">0</span> <small style="font-size: 0.75rem; color: var(--text-muted);">kcal</small></div>
+          </div>
+
+          <div class="meal-chip">
+            <div class="meal-chip-header">
+              <span>☀️ Lunch</span>
+            </div>
+            <div class="meal-chip-val"><span id="lunchVal">0</span> <small style="font-size: 0.75rem; color: var(--text-muted);">kcal</small></div>
+          </div>
+
+          <div class="meal-chip">
+            <div class="meal-chip-header">
+              <span>🌙 Dinner</span>
+            </div>
+            <div class="meal-chip-val"><span id="dinnerVal">0</span> <small style="font-size: 0.75rem; color: var(--text-muted);">kcal</small></div>
+          </div>
+
+          <div class="meal-chip">
+            <div class="meal-chip-header">
+              <span>🍎 Snacks</span>
+            </div>
+            <div class="meal-chip-val"><span id="snackVal">0</span> <small style="font-size: 0.75rem; color: var(--text-muted);">kcal</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar & Quick Presets -->
+    <div class="action-bar">
+      <button class="btn-primary" id="openAddModalBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Log Food Consumption
+      </button>
+
+      <div class="quick-preset-container">
+        <span class="preset-label">Quick Log:</span>
+        <button class="btn-preset" onclick="quickAdd('Apple', 95, 'SNACK', '1 medium')">+ Apple (95 kcal)</button>
+        <button class="btn-preset" onclick="quickAdd('Boiled Egg', 78, 'BREAKFAST', '1 large')">+ Egg (78 kcal)</button>
+        <button class="btn-preset" onclick="quickAdd('Chicken Rice Bowl', 450, 'LUNCH', '1 bowl')">+ Chicken Rice (450 kcal)</button>
+        <button class="btn-preset" onclick="quickAdd('Green Salad', 120, 'DINNER', '1 plate')">+ Salad (120 kcal)</button>
+      </div>
+    </div>
+
+    <!-- Meals Logged List -->
+    <div class="meals-container" id="mealsContainer">
+      <!-- Sections will be populated dynamically -->
+    </div>
+
+    <!-- 7-Day Trend Chart -->
+    <div class="trend-card">
+      <div class="trend-header">
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700;">7-Day Calorie History</h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Tracking your daily consistency</span>
+        </div>
+      </div>
+      <div class="trend-chart" id="trendChart">
+        <!-- Bars populated dynamically -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Add Food Modal -->
+  <div class="modal-backdrop" id="foodModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Log Food Consumption</h3>
+        <button class="btn-close" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="foodForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="foodNameInput">Food Name</label>
+            <input type="text" id="foodNameInput" class="form-control" placeholder="e.g. Oatmeal with Berries" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="caloriesInput">Calories (kcal)</label>
+              <input type="number" id="caloriesInput" class="form-control" placeholder="e.g. 320" min="0" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="mealTypeSelect">Meal Type</label>
+              <select id="mealTypeSelect" class="form-control" required>
+                <option value="BREAKFAST">🌅 Breakfast</option>
+                <option value="LUNCH">☀️ Lunch</option>
+                <option value="DINNER">🌙 Dinner</option>
+                <option value="SNACK" selected>🍎 Snack</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="servingInput">Portion / Serving Size</label>
+              <input type="text" id="servingInput" class="form-control" placeholder="e.g. 1 bowl, 200g">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="logDateInput">Date</label>
+              <input type="date" id="logDateInput" class="form-control" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelModalBtn">Cancel</button>
+          <button type="submit" class="btn-primary" id="saveFoodBtn">Save Food</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // State
+    let currentDate = new Date().toISOString().split('T')[0];
+    let dailyGoal = parseInt(localStorage.getItem('calorieTarget')) || 2000;
+
+    // Elements
+    const datePicker = document.getElementById('datePicker');
+    const prevDayBtn = document.getElementById('prevDayBtn');
+    const nextDayBtn = document.getElementById('nextDayBtn');
+    const todayBtn = document.getElementById('todayBtn');
+    const totalCaloriesDisplay = document.getElementById('totalCaloriesDisplay');
+    const calorieProgressBar = document.getElementById('calorieProgressBar');
+    const progressPercent = document.getElementById('progressPercent');
+    const targetDisplay = document.getElementById('targetDisplay');
+    const statusBadge = document.getElementById('statusBadge');
+    const editGoalBtn = document.getElementById('editGoalBtn');
+
+    const breakfastVal = document.getElementById('breakfastVal');
+    const lunchVal = document.getElementById('lunchVal');
+    const dinnerVal = document.getElementById('dinnerVal');
+    const snackVal = document.getElementById('snackVal');
+    const mealsContainer = document.getElementById('mealsContainer');
+    const trendChart = document.getElementById('trendChart');
+
+    // Modal elements
+    const foodModal = document.getElementById('foodModal');
+    const openAddModalBtn = document.getElementById('openAddModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const foodForm = document.getElementById('foodForm');
+    const foodNameInput = document.getElementById('foodNameInput');
+    const caloriesInput = document.getElementById('caloriesInput');
+    const mealTypeSelect = document.getElementById('mealTypeSelect');
+    const servingInput = document.getElementById('servingInput');
+    const logDateInput = document.getElementById('logDateInput');
+
+    // Initial setup
+    datePicker.value = currentDate;
+    logDateInput.value = currentDate;
+    targetDisplay.textContent = dailyGoal;
+
+    // Load initial data
+    loadDayData(currentDate);
+    loadTrend();
+
+    // Event listeners
+    datePicker.addEventListener('change', (e) => {
+      currentDate = e.target.value;
+      loadDayData(currentDate);
+    });
+
+    prevDayBtn.addEventListener('click', () => {
+      const d = new Date(currentDate);
+      d.setDate(d.getDate() - 1);
+      currentDate = d.toISOString().split('T')[0];
+      datePicker.value = currentDate;
+      loadDayData(currentDate);
+    });
+
+    nextDayBtn.addEventListener('click', () => {
+      const d = new Date(currentDate);
+      d.setDate(d.getDate() + 1);
+      currentDate = d.toISOString().split('T')[0];
+      datePicker.value = currentDate;
+      loadDayData(currentDate);
+    });
+
+    todayBtn.addEventListener('click', () => {
+      currentDate = new Date().toISOString().split('T')[0];
+      datePicker.value = currentDate;
+      loadDayData(currentDate);
+    });
+
+    editGoalBtn.addEventListener('click', () => {
+      const newGoal = prompt('Enter your daily calorie goal (kcal):', dailyGoal);
+      if (newGoal && !isNaN(newGoal) && parseInt(newGoal) > 0) {
+        dailyGoal = parseInt(newGoal);
+        localStorage.setItem('calorieTarget', dailyGoal);
+        targetDisplay.textContent = dailyGoal;
+        loadDayData(currentDate);
+        loadTrend();
+        showToast(`Target updated to ${dailyGoal} kcal`);
+      }
+    });
+
+    // Modal triggers
+    openAddModalBtn.addEventListener('click', () => {
+      foodForm.reset();
+      logDateInput.value = currentDate;
+      foodModal.classList.add('open');
+      foodNameInput.focus();
+    });
+
+    const closeModal = () => foodModal.classList.remove('open');
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelModalBtn.addEventListener('click', closeModal);
+    foodModal.addEventListener('click', (e) => {
+      if (e.target === foodModal) closeModal();
+    });
+
+    // Form submission
+    foodForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        foodName: foodNameInput.value.trim(),
+        calories: parseInt(caloriesInput.value) || 0,
+        mealType: mealTypeSelect.value,
+        servingSize: servingInput.value.trim() || '1 serving',
+        logDate: logDateInput.value
+      };
+
+      try {
+        const res = await fetch('/api/meals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          closeModal();
+          showToast(`Logged "${payload.foodName}" (${payload.calories} kcal)`);
+          // If logged date is selected date, reload
+          if (payload.logDate === currentDate) {
+            loadDayData(currentDate);
+          } else {
+            currentDate = payload.logDate;
+            datePicker.value = currentDate;
+            loadDayData(currentDate);
+          }
+          loadTrend();
+        } else {
+          showToast('Failed to save food log');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Error connecting to server');
+      }
+    });
+
+    // Quick Add
+    async function quickAdd(foodName, calories, mealType, serving) {
+      const payload = {
+        foodName,
+        calories,
+        mealType,
+        servingSize: serving,
+        logDate: currentDate
+      };
+      try {
+        const res = await fetch('/api/meals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast(`Quick logged ${foodName}!`);
+          loadDayData(currentDate);
+          loadTrend();
+        }
+      } catch (err) {
+        showToast('Failed to log preset');
+      }
+    }
+
+    // Delete Food Log
+    async function deleteLog(id, name) {
+      if (!confirm(`Delete "${name}" from logs?`)) return;
+      try {
+        const res = await fetch(`/api/meals/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast(`Removed "${name}"`);
+          loadDayData(currentDate);
+          loadTrend();
+        } else {
+          showToast('Could not delete item');
+        }
+      } catch (err) {
+        showToast('Error deleting item');
+      }
+    }
+
+    // Fetch and render day summary
+    async function loadDayData(date) {
+      try {
+        const res = await fetch(`/api/meals?date=${date}&target=${dailyGoal}`);
+        const data = await res.json();
+        renderSummary(data);
+        renderMeals(data.logs || []);
+      } catch (err) {
+        console.error('Failed to load day data:', err);
+      }
+    }
+
+    // Render Summary Dashboard
+    function renderSummary(data) {
+      const total = data.totalCalories || 0;
+      totalCaloriesDisplay.textContent = total.toLocaleString();
+
+      breakfastVal.textContent = data.breakfastCalories || 0;
+      lunchVal.textContent = data.lunchCalories || 0;
+      dinnerVal.textContent = data.dinnerCalories || 0;
+      snackVal.textContent = data.snackCalories || 0;
+
+      const pct = Math.min(100, Math.round((total / dailyGoal) * 100));
+      calorieProgressBar.style.width = `${pct}%`;
+      progressPercent.textContent = Math.round((total / dailyGoal) * 100);
+
+      if (total > dailyGoal) {
+        calorieProgressBar.classList.add('over-limit');
+        statusBadge.className = 'status-badge badge-danger';
+        statusBadge.innerHTML = `⚠️ Over Goal by ${(total - dailyGoal).toLocaleString()} kcal`;
+      } else {
+        calorieProgressBar.classList.remove('over-limit');
+        statusBadge.className = 'status-badge badge-success';
+        const rem = dailyGoal - total;
+        statusBadge.innerHTML = `✓ ${rem.toLocaleString()} kcal remaining`;
+      }
+    }
+
+    // Render Meals Grouped by Category
+    function renderMeals(logs) {
+      mealsContainer.innerHTML = '';
+
+      if (logs.length === 0) {
+        mealsContainer.innerHTML = `
+          <div class="meal-section empty-state">
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🍽️</div>
+            <p style="font-weight: 600; color: var(--text-main);">No food consumption logged for this day yet.</p>
+            <p style="font-size: 0.85rem; margin-top: 0.25rem;">Click "Log Food Consumption" above or use a Quick Log button to track your meals.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const mealTypes = [
+        { key: 'BREAKFAST', label: 'Breakfast', icon: '🌅' },
+        { key: 'LUNCH', label: 'Lunch', icon: '☀️' },
+        { key: 'DINNER', label: 'Dinner', icon: '🌙' },
+        { key: 'SNACK', label: 'Snacks', icon: '🍎' }
+      ];
+
+      mealTypes.forEach(m => {
+        const items = logs.filter(item => (item.mealType || '').toUpperCase() === m.key);
+        if (items.length > 0) {
+          const subtotal = items.reduce((sum, item) => sum + (item.calories || 0), 0);
+          const section = document.createElement('div');
+          section.className = 'meal-section';
+
+          let itemsHtml = items.map(item => `
+            <li class="food-item">
+              <div class="food-info">
+                <span class="food-name">${escapeHtml(item.foodName)}</span>
+                <span class="food-serving">${escapeHtml(item.servingSize || '1 serving')}</span>
+              </div>
+              <div class="food-actions">
+                <span class="food-calories">${item.calories} kcal</span>
+                <button class="btn-delete" title="Delete" onclick="deleteLog(${item.id}, '${escapeHtml(item.foodName)}')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </li>
+          `).join('');
+
+          section.innerHTML = `
+            <div class="meal-header">
+              <div class="meal-title-group">
+                <span>${m.icon}</span>
+                <span>${m.label}</span>
+                <span class="meal-badge-count">${items.length}</span>
+              </div>
+              <div class="meal-header-cal">${subtotal} kcal</div>
+            </div>
+            <ul class="food-list">
+              ${itemsHtml}
+            </ul>
+          `;
+          mealsContainer.appendChild(section);
+        }
+      });
+    }
+
+    // Render 7-day trend chart
+    async function loadTrend() {
+      try {
+        const res = await fetch(`/api/meals/trend?days=7&target=${dailyGoal}`);
+        const data = await res.json();
+        trendChart.innerHTML = '';
+
+        const maxCal = Math.max(dailyGoal * 1.25, ...data.map(d => d.calories || 0), 1000);
+
+        data.forEach(item => {
+          const cal = item.calories || 0;
+          const heightPct = Math.round((cal / maxCal) * 100);
+          const isSelected = item.date === currentDate;
+          const isOver = cal > dailyGoal;
+
+          const dayName = new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+
+          const barWrapper = document.createElement('div');
+          barWrapper.className = 'trend-bar-wrapper';
+          barWrapper.style.cursor = 'pointer';
+          barWrapper.title = `${item.date}: ${cal} kcal`;
+          barWrapper.onclick = () => {
+            currentDate = item.date;
+            datePicker.value = currentDate;
+            loadDayData(currentDate);
+          };
+
+          barWrapper.innerHTML = `
+            <span class="trend-val-tooltip">${cal > 0 ? cal : ''}</span>
+            <div class="trend-bar ${isSelected ? 'active' : ''} ${isOver ? 'over' : ''}" style="height: ${Math.max(6, heightPct)}%;"></div>
+            <span class="trend-day-label" style="${isSelected ? 'color: var(--primary); font-weight: 700;' : ''}">${dayName}</span>
+          `;
+          trendChart.appendChild(barWrapper);
+        });
+      } catch (err) {
+        console.error('Failed to load trend:', err);
+      }
+    }
+
+    // Helper: Toast notification
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    // Helper: HTML escaping
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
